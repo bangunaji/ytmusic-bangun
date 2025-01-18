@@ -1,21 +1,20 @@
 import os
 import yt_dlp
-from telegram import Application
-from telegram.ext import Updater, CommandHandler, CallbackContext
-from telegram.ext import MessageHandler, filters
+from telegram import Update
+from telegram.ext import Application, CommandHandler, MessageHandler, CallbackContext, filters
 
 # Ganti dengan token bot Telegram kamu
 TELEGRAM_TOKEN = '7682174100:AAECsd6jzA2RMgPO8k5lBkl-GJsGHAn-67g'
 
 # Fungsi untuk memulai bot
-def start(update: Update, context: CallbackContext):
-    update.message.reply_text("Halo! Kirimkan judul lagu atau link YouTube, dan saya akan mengirimkan link musiknya!")
+async def start(update: Update, context: CallbackContext):
+    await update.message.reply_text("Halo! Kirimkan judul lagu atau link YouTube, dan saya akan mengirimkan link musiknya!")
 
 # Fungsi untuk mencari musik di YouTube
-def search_song(update: Update, context: CallbackContext):
+async def search_song(update: Update, context: CallbackContext):
     search_query = ' '.join(context.args)
     if not search_query:
-        update.message.reply_text("Tolong berikan judul lagu atau link YouTube.")
+        await update.message.reply_text("Tolong berikan judul lagu atau link YouTube.")
         return
 
     # Gunakan yt-dlp untuk mencari video di YouTube
@@ -38,24 +37,23 @@ def search_song(update: Update, context: CallbackContext):
         
         # Kirim file audio ke pengguna
         if os.path.exists(audio_file):
-            update.message.reply_audio(open(audio_file, 'rb'))
+            await update.message.reply_audio(open(audio_file, 'rb'))
         else:
-            update.message.reply_text(f"Berikut adalah link video YouTube yang kamu cari: {video_url}")
+            await update.message.reply_text(f"Berikut adalah link video YouTube yang kamu cari: {video_url}")
 
 # Fungsi untuk memulai bot dan mendaftarkan handler
-def main():
-    # Setup Updater dan Dispatcher
+async def main():
+    # Setup Application
     application = Application.builder().token(TELEGRAM_TOKEN).build()
-    dispatcher = updater.dispatcher
 
     # Daftarkan handler untuk perintah start dan search
-    dispatcher.add_handler(CommandHandler('start', start))
-    dispatcher.add_handler(CommandHandler('search', search_song))
-    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, search_song))  # Mendengarkan pesan teks tanpa perintah
+    application.add_handler(CommandHandler('start', start))
+    application.add_handler(CommandHandler('search', search_song))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, search_song))  # Mendengarkan pesan teks tanpa perintah
 
     # Mulai bot
-    updater.start_polling()
-    updater.idle()
+    await application.run_polling()
 
 if __name__ == '__main__':
-    main()
+    import asyncio
+    asyncio.run(main())
