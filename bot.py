@@ -1,6 +1,7 @@
 import asyncio
 from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, CallbackContext, filters
+from telegram.ext import ApplicationBuilder
+application = ApplicationBuilder().token(TELEGRAM_TOKEN).connect_timeout(10).read_timeout(10).build()
 
 # Token bot Telegram Anda
 TELEGRAM_TOKEN = '7682174100:AAECsd6jzA2RMgPO8k5lBkl-GJsGHAn-67g'
