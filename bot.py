@@ -56,6 +56,9 @@ async def main():
     # Mulai bot
     await application.run_polling()
 
+import asyncio
+
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
+
 
