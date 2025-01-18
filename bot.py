@@ -1,7 +1,8 @@
 import os
 import yt_dlp
-from telegram import Update
-from telegram.ext import Application, CommandHandler, CallbackContext, MessageHandler, filters
+from telegram import Application, Update
+from telegram.ext import CommandHandler, MessageHandler, CallbackContext
+from telegram.ext import filters
 
 # Ganti dengan token bot Telegram kamu
 TELEGRAM_TOKEN = '7682174100:AAECsd6jzA2RMgPO8k5lBkl-GJsGHAn-67g'
@@ -12,9 +13,7 @@ async def start(update: Update, context: CallbackContext):
 
 # Fungsi untuk mencari musik di YouTube
 async def search_song(update: Update, context: CallbackContext):
-    # Pastikan context.args adalah iterable yang valid
-    search_query = ' '.join(context.args) if context.args else None
-
+    search_query = ' '.join(context.args)
     if not search_query:
         await update.message.reply_text("Tolong berikan judul lagu atau link YouTube.")
         return
@@ -45,7 +44,7 @@ async def search_song(update: Update, context: CallbackContext):
 
 # Fungsi untuk memulai bot dan mendaftarkan handler
 async def main():
-    # Setup Application
+    # Setup Application dan Dispatcher
     application = Application.builder().token(TELEGRAM_TOKEN).build()
 
     # Daftarkan handler untuk perintah start dan search
@@ -53,12 +52,9 @@ async def main():
     application.add_handler(CommandHandler('search', search_song))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, search_song))  # Mendengarkan pesan teks tanpa perintah
 
-    # Mulai bot
+    # Mulai polling bot
     await application.run_polling()
 
-import asyncio
-
 if __name__ == '__main__':
-    asyncio.run(main())
-
-
+    import asyncio
+    asyncio.run(main())  # Menjalankan main dengan event loop
