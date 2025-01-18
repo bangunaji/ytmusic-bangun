@@ -1,6 +1,6 @@
 import os
 import yt_dlp
-from telegram import Update
+from telegram import Application
 from telegram.ext import Updater, CommandHandler, CallbackContext
 from telegram.ext import MessageHandler, filters
 
@@ -45,7 +45,7 @@ def search_song(update: Update, context: CallbackContext):
 # Fungsi untuk memulai bot dan mendaftarkan handler
 def main():
     # Setup Updater dan Dispatcher
-    updater = Updater(TELEGRAM_TOKEN)
+    application = Application.builder().token(TELEGRAM_TOKEN).build()
     dispatcher = updater.dispatcher
 
     # Daftarkan handler untuk perintah start dan search
