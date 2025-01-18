@@ -55,6 +55,10 @@ async def main():
     # Mulai polling bot
     await application.run_polling()
 
+# Mengecek apakah sudah ada event loop aktif, jika ada jalankan polling
 if __name__ == '__main__':
-    # Menjalankan bot secara langsung
-    asyncio.run(main())
+    try:
+        asyncio.get_event_loop().run_until_complete(main())
+    except RuntimeError:
+        # Jika ada event loop yang sudah berjalan, gunakan ensure_future
+        asyncio.ensure_future(main())
