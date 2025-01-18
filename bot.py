@@ -1,7 +1,7 @@
 import asyncio
 from telegram import Update
 from telegram.ext import ApplicationBuilder
-application = ApplicationBuilder().token(TELEGRAM_TOKEN).connect_timeout(10).read_timeout(10).build()
+
 
 # Token bot Telegram Anda
 TELEGRAM_TOKEN = '7682174100:AAECsd6jzA2RMgPO8k5lBkl-GJsGHAn-67g'
@@ -17,7 +17,7 @@ async def search_song(update: Update, context: CallbackContext):
 # Fungsi utama untuk menjalankan aplikasi
 def main():
     # Inisialisasi aplikasi Telegram
-    application = Application.builder().token(TELEGRAM_TOKEN).build()
+    application = ApplicationBuilder().token(TELEGRAM_TOKEN).connect_timeout(10).read_timeout(10).build()
 
     # Tambahkan handler untuk perintah dan pesan teks
     application.add_handler(CommandHandler('start', start))
