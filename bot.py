@@ -1,75 +1,54 @@
-import logging
+import yt_dlp
 from telegram import Update
-from telegram.ext import (
-    ApplicationBuilder,
-    CommandHandler,
-    MessageHandler,
-    CallbackContext,
-    filters
-)
-from googleapiclient.discovery import build
-
-# Konfigurasi logging untuk debugging
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO,
-)
-logger = logging.getLogger(__name__)
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackContext, MessageHandler, filters
+import os
 
 # Token bot Telegram Anda
 TELEGRAM_TOKEN = '7682174100:AAECsd6jzA2RMgPO8k5lBkl-GJsGHAn-67g'
 
-# API Key YouTube
-YOUTUBE_API_KEY = 'AIzaSyC-2ai2bpanZTcLsYUXbW_uac0a7l8dL8A'  # Ganti dengan API Key YouTube Anda
-
 # Fungsi untuk menangani perintah /start
 async def start(update: Update, context: CallbackContext):
-    await update.message.reply_text(
-        "Halo! Kirimkan judul lagu atau link YouTube, dan saya akan membantu mencarikan musiknya!"
-    )
-    logger.info(f"User {update.effective_user.username} menjalankan perintah /start.")
+    await update.message.reply_text("Halo! Kirimkan judul lagu atau link YouTube, dan saya akan membantu mencarikan musiknya!")
 
-# Fungsi untuk mencari lagu di YouTube
+# Fungsi untuk mengunduh audio dari YouTube
+def download_audio_from_youtube(url):
+    ydl_opts = {
+        'format': 'bestaudio/best',  # Mengambil format audio terbaik
+        'outtmpl': 'downloaded_song.%(ext)s',  # Nama file keluaran
+        'postprocessors': [{
+            'key': 'FFmpegAudio',
+            'preferredcodec': 'mp3',  # Format mp3
+            'preferredquality': '192',  # Kualitas audio
+        }],
+    }
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        ydl.download([url])
+
+# Fungsi untuk menangani pencarian dan pengiriman musik
 async def search_song(update: Update, context: CallbackContext):
-    query = update.message.text  # Pesan dari pengguna
-    youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
-    
-    # Pencarian video di YouTube
-    search_response = youtube.search().list(
-        q=query, part="snippet", maxResults=1, type="video"
-    ).execute()
-    
-    if search_response['items']:
-        video = search_response['items'][0]
-        video_title = video['snippet']['title']
-        video_url = f"https://www.youtube.com/watch?v={video['id']['videoId']}"
-        await update.message.reply_text(f"Judul: {video_title}\nLink: {video_url}")
+    query = update.message.text  # Mendapatkan pesan dari user
+    if "youtube.com" in query:
+        # Jika link YouTube dikirim, coba unduh audio
+        await update.message.reply_text("Mengunduh musik dari YouTube, harap tunggu...")
+        download_audio_from_youtube(query)
+        music_file = 'downloaded_song.mp3'  # Nama file yang diunduh
+        await update.message.reply_audio(open(music_file, 'rb'))
+        os.remove(music_file)  # Hapus file setelah dikirim
     else:
-        await update.message.reply_text("Maaf, tidak dapat menemukan lagu tersebut.")
-    logger.info(f"Melakukan pencarian untuk: {query}")
+        await update.message.reply_text("Fungsi pencarian lagu sedang dalam pengembangan. Silakan kirimkan link YouTube.")
 
 # Fungsi utama untuk menjalankan aplikasi
 def main():
-    try:
-        # Inisialisasi aplikasi Telegram
-        application = (
-            ApplicationBuilder()
-            .token(TELEGRAM_TOKEN)
-            .connect_timeout(30)  # Timeout koneksi (detik)
-            .read_timeout(30)     # Timeout pembacaan respons (detik)
-            .build()
-        )
+    # Inisialisasi aplikasi Telegram
+    application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
 
-        # Tambahkan handler untuk perintah dan pesan teks
-        application.add_handler(CommandHandler("start", start))
-        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, search_song))
+    # Tambahkan handler untuk perintah dan pesan teks
+    application.add_handler(CommandHandler('start', start))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, search_song))
 
-        # Jalankan bot menggunakan polling
-        logger.info("Bot sedang berjalan...")
-        application.run_polling()
-
-    except Exception as e:
-        logger.error(f"Terjadi kesalahan: {e}")
+    # Jalankan bot menggunakan polling
+    application.run_polling()
 
 if __name__ == '__main__':
     main()
