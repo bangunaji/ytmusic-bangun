@@ -42,7 +42,7 @@ async def search_song(update: Update, context: CallbackContext):
             await update.message.reply_text(f"Berikut adalah link video YouTube yang kamu cari: {video_url}")
 
 # Fungsi untuk memulai bot dan mendaftarkan handler
-async def main():
+def main():
     # Setup Application
     application = Application.builder().token(TELEGRAM_TOKEN).build()
 
@@ -52,8 +52,7 @@ async def main():
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, search_song))  # Mendengarkan pesan teks tanpa perintah
 
     # Mulai bot
-    await application.run_polling()
+    application.run_polling()
 
 if __name__ == '__main__':
-    import asyncio
-    asyncio.run(main())
+    main()
