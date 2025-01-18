@@ -56,16 +56,5 @@ async def main():
     await application.run_polling()
 
 if __name__ == '__main__':
-    try:
-        # Periksa apakah event loop sudah berjalan
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            print("Event loop sudah berjalan. Bot akan dimulai dengan run_polling.")
-        else:
-            asyncio.run(main())  # Menjalankan main dengan event loop
-    except RuntimeError as e:
-        if 'This event loop is already running' in str(e):
-            print("Event loop sudah berjalan. Menjalankan bot dengan run_polling.")
-            asyncio.create_task(main())
-        else:
-            raise e
+    # Menjalankan bot secara langsung
+    asyncio.run(main())
