@@ -1,65 +1,29 @@
-import os
-import yt_dlp
 import asyncio
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackContext, filters
 
-# Ganti dengan token bot Telegram kamu
+# Token bot Telegram Anda
 TELEGRAM_TOKEN = '7682174100:AAECsd6jzA2RMgPO8k5lBkl-GJsGHAn-67g'
 
-# Fungsi untuk memulai bot
+# Fungsi untuk menangani perintah /start
 async def start(update: Update, context: CallbackContext):
-    await update.message.reply_text("Halo! Kirimkan judul lagu atau link YouTube, dan saya akan mengirimkan link musiknya!")
+    await update.message.reply_text("Halo! Kirimkan judul lagu atau link YouTube, dan saya akan membantu mencarikan musiknya!")
 
-# Fungsi untuk mencari musik di YouTube
+# Fungsi untuk menangani pencarian lagu
 async def search_song(update: Update, context: CallbackContext):
-    search_query = ' '.join(context.args)
-    if not search_query:
-        await update.message.reply_text("Tolong berikan judul lagu atau link YouTube.")
-        return
+    await update.message.reply_text("Fungsi pencarian lagu sedang dalam pengembangan.")
 
-    # Gunakan yt-dlp untuk mencari video di YouTube
-    ydl_opts = {
-        'quiet': True,
-        'extractaudio': True,
-        'audioquality': 1,
-        'outtmpl': 'downloads/%(id)s.%(ext)s',
-        'postprocessors': [{
-            'key': 'FFmpegAudioConvertor',
-            'preferredcodec': 'mp3',
-            'preferredquality': '192',
-        }],
-    }
-
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        result = ydl.extract_info(f"ytsearch:{search_query}", download=True)
-        video_url = result['entries'][0]['url']
-        audio_file = f"downloads/{result['entries'][0]['id']}.mp3"
-        
-        # Kirim file audio ke pengguna
-        if os.path.exists(audio_file):
-            await update.message.reply_audio(open(audio_file, 'rb'))
-        else:
-            await update.message.reply_text(f"Berikut adalah link video YouTube yang kamu cari: {video_url}")
-
-# Fungsi untuk memulai bot dan mendaftarkan handler
-async def main():
-    # Setup Application dan Dispatcher
+# Fungsi utama untuk menjalankan aplikasi
+def main():
+    # Inisialisasi aplikasi Telegram
     application = Application.builder().token(TELEGRAM_TOKEN).build()
 
-    # Daftarkan handler untuk perintah start dan search
+    # Tambahkan handler untuk perintah dan pesan teks
     application.add_handler(CommandHandler('start', start))
-    application.add_handler(CommandHandler('search', search_song))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, search_song))  # Mendengarkan pesan teks tanpa perintah
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, search_song))
 
-    # Mulai polling bot
-    await application.run_polling()
+    # Jalankan bot menggunakan polling
+    application.run_polling()
 
-# Mengecek apakah sudah ada event loop aktif
 if __name__ == '__main__':
-    try:
-        # Jika event loop tidak aktif, gunakan run() di dalam event loop yang ada
-        asyncio.run(main())
-    except RuntimeError:
-        # Jika sudah ada event loop aktif, gunakan create_task
-        asyncio.create_task(main())
+    main()
